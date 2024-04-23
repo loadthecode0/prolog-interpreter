@@ -2,6 +2,9 @@
 
 .PHONY: clean
 
+default:
+	make all clean
+
 all:
 	ocamlbuild main.native --
 

@@ -16,6 +16,7 @@ type head_node = Head of atom_node
 type body_node = Body of atom_node list
 type clause_node = Fact of head_node | Rule of head_node * body_node | Goal of body_node 
 type program_tree = Prog of clause_node list
+type subgoal_node = Subgoal of atom_node
 type goal_node = Goal of atom_node list 
 
 let rec print_term_list (tl:term_node list) = match tl with
