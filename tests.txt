@@ -1,0 +1,34 @@
+parent(bob, alice).
+parent(alice, lisa).
+parent(alice, john).
+parent(bob, tom).
+parent(tom, mary).
+grandparent(GP, GC) :- parent(GP, P), parent(P, GC).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y).
+cousin(X, Y) :- parent(PX, X), parent(PY, Y), sibling(PX, PY).
+
+?- grandparent(X, lisa).
+ 
+=========================================================================
+
+manager(john, dave).
+manager(susan, alice).
+manager(alice, mary).
+manager(mary, carl).
+indirect_manager(A, B) :- manager(A, C), manager(C, B).
+direct_or_indirect_manager(A, B) :- manager(A, B). 
+direct_or_indirect_manager(A, B) :- indirect_manager(A, B).
+
+?- direct_or_indirect_manager(Manager, carl).
+
+==========================================================================
+
+manager(john, dave).
+manager(susan, alice).
+manager(alice, mary).
+manager(mary, carl).
+indirect_manager(A, B) :- manager(A, C), manager(C, B).
+direct_or_indirect_manager(A, B) :- indirect_manager(A, B).
+direct_or_indirect_manager(A, B) :- manager(A, B). 
+
+?- direct_or_indirect_manager(Manager, carl).

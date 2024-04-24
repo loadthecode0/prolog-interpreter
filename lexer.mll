@@ -22,7 +22,7 @@ rule token = parse
         {VARIABLE(x)}
     | [',' ';']
         {SEPARATOR}
-    | ['\n'] {EOL}
+    | ['\n']+ {EOL}
     | ['.'] {PERIOD}
     | ":-" {IF}
 

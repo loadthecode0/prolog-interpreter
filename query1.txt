@@ -1,1 +1,1 @@
-grandparent(X, lisa).
+direct_or_indirect_manager(Manager, carl).
