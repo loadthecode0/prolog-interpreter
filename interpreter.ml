@@ -96,7 +96,6 @@ and make_tree_term (t:term_node) : tree =
 let rec solve_goals (depth:int) (g:goal_node) (origVars : (string list)) (prog:program_tree) (table:substitution)=
   match g with
   | Goal([]) -> 
-    (* let varList = vars (make_tree_goal g) in *)
       let _ = ( Printf.printf "Finally:\n" ; print_sub (filterSubst origVars table) )in (true, [])
   | Goal(atom::remGoals) ->
       let sg = (Subgoal(atom)) in
@@ -106,10 +105,6 @@ let rec solve_goals (depth:int) (g:goal_node) (origVars : (string list)) (prog:p
               let choices = get_choices sg (Prog(subProg)) in 
               solve_subgoal_with_choices (depth+1) sg origVars choices remGoals (Prog(subProg)) table
             );
-            (* solve_goals (depth) (Goal(remGoals)) origVars (Prog(subProg)) table *)
-              (* let (b1, s1) = (solve_subgoal_with_choices sg choices remGoals (Prog(subProg)) table) in
-                let (b2, s2) = (solve_goals (Goal(remGoals)) (Prog(subProg)) s1) in 
-                  ((b1 && b2), s2) *)
 
 and solve_subgoal_with_choices d sg origVars chs rg subProg table = match chs with
   | [] -> (false, [])
@@ -144,6 +139,4 @@ let resolve_query (prog:program_tree) (g:goal_node) =
   match prog with Prog(clause_list) ->
     let _ = solve_goals 0 g (vars (make_tree_goal g)) (Prog(indexParallelClauses clause_list 1)) [] 
   in true;;
-
-(* let getTopLevelAns (prog:program_tree) (g:goal_node)  *)
 

@@ -135,8 +135,8 @@ let remove_carriage_returns file_name =
 
 let main () =
 
-  let prog_str = remove_carriage_returns "program1.txt"
-  and query_str = remove_carriage_returns "query1.txt"
+  let prog_str = remove_carriage_returns "program.txt"
+  and query_str = remove_carriage_returns "query.txt"
     in
     try
       
