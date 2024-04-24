@@ -32,8 +32,8 @@ let rec indexParallelClauses (clause_list:(clause_node list)) (i:int): (clause_n
 let rec increaseDepth (clause_list:(clause_node list)) (Atom(s, _): atom_node): (clause_node list) = match (clause_list) with
     [] -> []
   | cl::cls -> match cl with Fact(Head(Atom(s', _))) | Rule(Head(Atom(s', _)), _) ->
-                if s = s' then (indexClause 0 cl)::increaseDepth cls (Atom(s, []))
-                else cl::increaseDepth cls (Atom(s, []))
+                if s = s' then (indexClause 0 cl)::(increaseDepth cls (Atom(s, [])))
+                else cl::(increaseDepth cls (Atom(s, [])))
 ;;
 
 let rec get_choices (sg:subgoal_node) (prog:program_tree) : choice_list = 
@@ -48,10 +48,24 @@ let rec get_choices (sg:subgoal_node) (prog:program_tree) : choice_list =
               | _ -> get_choices sg (Prog(cls))
 ;;
 
+let rec filterSubst (varList:(string list)) (sub:substitution) : (substitution)=
+  match varList with
+  | [] -> []
+  | v::vs -> let t = (find_sub v sub) in
+      if (t <> (V(v))) then (v,t)::(filterSubst vs sub)
+      else (filterSubst vs sub)
+;;
+
 let rec make_tree_prog (p:program_tree) : tree =
   match p with 
-  | Prog([]) -> C{node = ("__empty__", 0); children = []}
+  | Prog([]) -> C{node = ("__empty_prog__", 0); children = []}
   | Prog(cls) -> C{node = ("__program__", List.length(cls)); children = (List.map make_tree_clause cls)}
+  | _ -> raise SomethingInvalid
+
+and make_tree_goal (g:goal_node) : tree =
+  match g with 
+  | Goal([]) -> C{node = ("__empty_goal__", 0); children = []}
+  | Goal(atoms) -> C{node = ("__goal__", List.length(atoms)); children = (List.map make_tree_atom atoms)}
   | _ -> raise SomethingInvalid
 
 and make_tree_subgoal (sg:subgoal_node) : tree =
@@ -79,52 +93,56 @@ and make_tree_term (t:term_node) : tree =
 
 ;;
 
-let rec solve_goals (g:goal_node) (prog:program_tree) (table:substitution) : (bool*substitution) =
+let rec solve_goals (depth:int) (g:goal_node) (origVars : (string list)) (prog:program_tree) (table:substitution)=
   match g with
-  | Goal([]) -> let _ = print_sub table in (true, [])
+  | Goal([]) -> 
+    (* let varList = vars (make_tree_goal g) in *)
+      let _ = ( Printf.printf "Finally:\n" ; print_sub (filterSubst origVars table) )in (true, [])
   | Goal(atom::remGoals) ->
       let sg = (Subgoal(atom)) in
-        let choices = get_choices sg prog in 
           let Prog(clause_list) = prog in
             let subProg = increaseDepth clause_list atom in
             (
-              solve_subgoal_with_choices sg choices remGoals (Prog(subProg)) table
+              let choices = get_choices sg (Prog(subProg)) in 
+              solve_subgoal_with_choices (depth+1) sg origVars choices remGoals (Prog(subProg)) table
             );
-            solve_goals (Goal(remGoals)) (Prog(subProg)) table
+            (* solve_goals (depth) (Goal(remGoals)) origVars (Prog(subProg)) table *)
               (* let (b1, s1) = (solve_subgoal_with_choices sg choices remGoals (Prog(subProg)) table) in
                 let (b2, s2) = (solve_goals (Goal(remGoals)) (Prog(subProg)) s1) in 
                   ((b1 && b2), s2) *)
 
-and solve_subgoal_with_choices sg chs rg subProg table = match chs with
+and solve_subgoal_with_choices d sg origVars chs rg subProg table = match chs with
   | [] -> (false, [])
   | ch::remChoices ->
     try
       (
-      let (b1, s1) = (solve_goal_with_choice sg ch table) in
+      let (b1, s1) = (unify sg ch table) in
       let (b2, s2) = 
       match ch with 
-        | (Fact(Head(a))) -> (solve_goals (Goal(rg)) subProg s1)
-        | (Rule(Head(a), Body(subgoals))) -> (solve_goals (Goal(subgoals @ rg)) subProg s1)
+        | (Fact(Head(a))) ->(solve_goals (d+1) (Goal(rg)) origVars subProg s1)
+        | (Rule(Head(a), Body(subgoals))) ->(solve_goals (d+1) (Goal(subgoals @ rg)) origVars subProg s1)
         in 
           if (b2 = true) then (b2, s2)
-          else solve_subgoal_with_choices sg remChoices rg subProg table
+          else solve_subgoal_with_choices d sg origVars remChoices rg subProg table
       )
     with
-      NOT_UNIFIABLE -> solve_subgoal_with_choices sg remChoices rg subProg table
+      NOT_UNIFIABLE -> solve_subgoal_with_choices d sg origVars remChoices rg subProg table
 
-and solve_goal_with_choice sg ch  table = 
+and unify sg ch  table = 
   match ch with
   | (Fact(Head(a))) | (Rule(Head(a), _)) -> 
       let t1 = subst table (make_tree_atom a) 
       and t2 = subst table (make_tree_subgoal sg) in
+        Printf.printf "Unifying these trees:\n";
         pp_tree t1; pp_tree t2;
+        Printf.printf "mgu:\n";
         let unifier = compose_subst table (mgu (t1, t2))  in
-          (true, unifier)
-;;
-    
+          let _ = print_sub unifier in
+            (true, unifier)
+   
 let resolve_query (prog:program_tree) (g:goal_node) = 
   match prog with Prog(clause_list) ->
-    solve_goals g (Prog(indexParallelClauses clause_list 1)) [] ;;
+    solve_goals 0 g (vars (make_tree_goal g)) (Prog(indexParallelClauses clause_list 1)) [] ;;
 
-
+(* let getTopLevelAns (prog:program_tree) (g:goal_node)  *)
 

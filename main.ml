@@ -87,6 +87,12 @@ let mygoal2 = Goal([
     Atom("grandparent", [Var("X"); Const_str("lisa")])
   ])
 ;;
+
+let myquery2 = Subgoal(
+    (* Atom("cousin", [Const_str("mary"); Var("Cousin")]); *)
+    Atom("grandparent", [Var("X"); Const_str("lisa")])
+  )
+;;
 (* get_choices myquery myprog;; *)
 
 (* let c = get_choices myquery1 myprog2;;
@@ -94,7 +100,8 @@ let mygoal2 = Goal([
 print_clause_list c;; *)
 
 pp_tree (make_tree_prog myprog2);;
-(* pp_tree (make_tree_subgoal myquery1);; *)
+Printf.printf "Query:" ;;
+pp_tree (make_tree_subgoal myquery2);;
 
 let (b, unif) = resolve_query (myprog2) (mygoal2) in
 
