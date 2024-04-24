@@ -14,7 +14,7 @@ type term_node =
 type atom_node = Atom of sym_node * (term_node list)
 type head_node = Head of atom_node
 type body_node = Body of atom_node list
-type clause_node = Fact of head_node | Rule of head_node * body_node | Goal of body_node 
+type clause_node = Fact of head_node | Rule of head_node * body_node 
 type program_tree = Prog of clause_node list
 type subgoal_node = Subgoal of atom_node
 type goal_node = Goal of atom_node list 
@@ -107,11 +107,11 @@ and print_clause (c:clause_node) = match c with
       print_body b;
       Printf.printf "\n\t);\n";
     )
-  | Goal(b) -> (
+  (* | Goal(b) -> (
       Printf.printf "Goal (\n \t\t";
       print_body b;
       Printf.printf "\n\t);\n";
-    )
+    ) *)
 ;;
 
 let print_program (p:program_tree) = match p with

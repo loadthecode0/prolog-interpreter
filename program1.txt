@@ -1,0 +1,8 @@
+parent(bob, alice).
+parent(alice, lisa).
+parent(alice, john).
+parent(bob, tom).
+parent(tom, mary).
+grandparent(GP, GC) :- parent(GP, P), parent(P, GC).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y).
+cousin(X, Y) :- parent(PX, X), parent(PY, Y), sibling(PX, PY).

@@ -142,7 +142,8 @@ and unify sg ch  table =
    
 let resolve_query (prog:program_tree) (g:goal_node) = 
   match prog with Prog(clause_list) ->
-    solve_goals 0 g (vars (make_tree_goal g)) (Prog(indexParallelClauses clause_list 1)) [] ;;
+    let _ = solve_goals 0 g (vars (make_tree_goal g)) (Prog(indexParallelClauses clause_list 1)) [] 
+  in true;;
 
 (* let getTopLevelAns (prog:program_tree) (g:goal_node)  *)
 

@@ -23,9 +23,9 @@
 %token EOF
 %token CUT
 
-%start program
+%start program makegoal
 %type <Ast.program_tree> program
-
+%type <Ast.goal_node> makegoal
 %%
 
 program: //returns program_tree
@@ -38,7 +38,10 @@ clause_list: //returns clause_node list type
 clause: 
 | atomic_formula PERIOD {Fact(Head($1))} 
 | atomic_formula IF goal PERIOD {Rule(Head($1), Body($3))}
-| goal PERIOD {Goal(Body($1))}
+// | goal PERIOD {Goal(Body($1))}
+
+makegoal:
+| goal PERIOD {Goal($1)}
 
 goal: //returns atom_node list
 | atomic_formula SEPARATOR goal  {($1)::$3}
